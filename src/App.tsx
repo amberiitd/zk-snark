@@ -1,24 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+const vKey = require("./verification_key.json")
 
 function App() {
+  const [genProof, setGenProof] = useState<any>();
+  const [verification, setVerification] = useState(false);
+  const generate = async () => {
+    const { proof, publicSignals } = await (window as any).snarkjs.groth16.fullProve({a: 1, b: 2}, `${process.env.PUBLIC_URL}/assets/circuit.wasm`, `${process.env.PUBLIC_URL}/assets/circuit_final.zkey`);
+
+    setGenProof(proof)
+    const res = await (window as any).snarkjs.groth16.verify(vKey, publicSignals, proof);
+
+    if (res === true) {
+        setVerification(true)
+    } else {
+        console.log("Invalid proof");
+    }
+  }
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <button onClick={() => generate()}>Generate</button>
+
+      <div>{JSON.stringify(genProof, null, 1)}</div>
+      <div>isVerified: {verification ? 'YES': 'NO'}</div>
     </div>
   );
 }
