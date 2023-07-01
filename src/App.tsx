@@ -21,8 +21,23 @@ import { useContext, useEffect, useState } from "react";
 import PageContextProvider, { PageContext } from "./contexts/page";
 import OverlayLoader from "./components/OverlayLoader";
 import { ToastContainer, toast } from "react-toastify";
+import { Amplify } from "aws-amplify";
 
 const vKey = require("./verification_key.json");
+
+Amplify.configure({
+  Auth: {
+    userPoolId: 'ap-south-1_J3VvKKDEN',
+    identityPoolId: 'ap-south-1:a349a6c9-154f-43f5-8f88-66a1e1fdccf5',
+    region: "ap-south-1",
+  },
+	Storage: {
+		AWSS3: {
+			bucket: "general-blockchain", //REQUIRED -  Amazon S3 bucket name
+			region: "ap-south-1", //OPTIONAL -  Amazon service region,
+		},
+	},
+});
 
 function App2() {
 	const [genProof, setGenProof] = useState<any>();
@@ -128,6 +143,10 @@ const Main = () => {
 				<>
 					{path1 === "app" ? (
 						<HomePage />
+					) : path1 === "in" ? (
+						<Navigate to="/app" />
+					) : path1 === "" ? (
+						<Navigate to="/app" />
 					) : (
 						<Navigate to="/notfound" />
 					)}

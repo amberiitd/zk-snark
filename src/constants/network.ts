@@ -1,3 +1,6 @@
+import Web3 from "web3";
+import { web3 } from "../contexts/network";
+
 export type Network = { label: string; chainId: string; rpcUrls: string[], contractAddress?: string, image?: string; };
 export const networks: { [key: string]: Network } = {
 	"80001": {
@@ -67,6 +70,11 @@ export const networks: { [key: string]: Network } = {
     }
 };
 // "10200", "534353", "1442", "420", "3141", "5001", "80001"
-export const allowedNetworkIds: {[key: string]: string[]} = {'metamask': [ "3141" ], 'fuel': ['fuel0'], 'default': []};
+export const allowedNetworkIds: {[key: string]: string[]} = {'metamask': [ "80001" ], 'fuel': ['fuel0'], 'default': []};
 
 export const pushApiKey = 'ZaCrOdyBNN.ajF5Igu8ppOfNkxiuiQGoXDyhTkd8sY4gG1v7aa822iVMJSnBE9zp1cXjDgUIPHC';
+
+export const ZK_GATE_CONTRACT = new (new Web3(window.ethereum)).eth.Contract(
+	require("./zk-gate-abi.json"),
+	"0x3226daE604FBF84f9C537357b9B854E06A1eA610"
+);

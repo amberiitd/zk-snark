@@ -107,8 +107,8 @@ const AppSideBar: FC = () => {
 					height: "100vh",
 					position: "sticky",
 					top: 0,
-                    left: 0,
-                    zIndex: 12
+					left: 0,
+					zIndex: 12,
 				}}
 			>
 				<Menu
@@ -186,7 +186,7 @@ const AppSideBar: FC = () => {
 							icon={<TimelineOutlinedIcon />}
 						/>
 
-						<Typography
+						{/* <Typography
 							variant="h6"
 							color={colors.grey[300]}
 							sx={{
@@ -194,18 +194,18 @@ const AppSideBar: FC = () => {
 							}}
 						>
 							Personal
-						</Typography>
+						</Typography> */}
 						{/* <Item
 							title="My courses"
 							to="/mycourses"
 							icon={<MenuBookOutlinedIcon />}
 						/> */}
 
-						<Item
+						{/* <Item
 							title="Tokens"
 							to="/tokens"
 							icon={<GridViewOutlinedIcon />}
-						/>
+						/> */}
 
 						<Box
 							marginTop={"auto"}
