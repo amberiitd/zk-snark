@@ -164,7 +164,7 @@ const AppSideBar: FC = () => {
 										color={colors.grey[100]}
 										paddingLeft={1}
 									>
-										ZK-GATE
+										zk-GATE
 									</Typography>
 								</Box>
 

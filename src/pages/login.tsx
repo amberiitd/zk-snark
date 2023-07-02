@@ -47,7 +47,7 @@ const LoginPage: FC = () => {
 							color={colors.grey[100]}
 							padding="5px 0 0 10px"
 						>
-							ZK-GATE
+							zk-GATE
 						</Typography>
 					</Box>
 					<Box
