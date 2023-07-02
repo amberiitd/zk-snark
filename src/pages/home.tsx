@@ -494,7 +494,7 @@ const HomePage: FC = () => {
 									? "NFT generated successfully"
 									: resultModal.code == 2
 									? "You already have an NFT."
-									: "Error occured˝"}
+									: "Error occured"}
 							</Typography>
 							<Divider sx={{ margin: "20px 0 20px 0" }} />
 							<Typography
@@ -503,7 +503,7 @@ const HomePage: FC = () => {
 								paddingLeft={1}
 							>
 								{resultModal.code === 1
-									? `You can now login in ${selectedApp}`
+									? <Typography>You can now login in <Link href='https://zk-learn.web.app/' target="_blank">{selectedApp}</Link></Typography>
 									: ""}
 							</Typography>
 						</Box>
