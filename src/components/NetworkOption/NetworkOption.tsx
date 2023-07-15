@@ -11,13 +11,15 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import ModalHeader, { style } from "../ModalHeader";
 import { toast } from "react-toastify";
+import Grow from "@mui/material/Grow";
+import Fade from '@mui/material/Fade';
+
 
 const NetworkOption: FC<{ show: boolean }> = (props) => {
 	const theme: any = useTheme();
 	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
 	const {
-		setSelectedNetworkId,
-		selectedNetworkId,
+		connection,
 		setNetworkOption,
 		wallet,
 	} = useContext(NetworkContext);
@@ -25,18 +27,22 @@ const NetworkOption: FC<{ show: boolean }> = (props) => {
 
 	useEffect(() => {
 		if (error) {
-      toast.error(error.message ||
-        "Error occured. visit console for mor info.")
+			toast.error(
+				error.message || "Error occured. visit console for mor info."
+			);
 		}
 	}, [error]);
 
 	return (
-		<Modal
-			open={props.show}
-			aria-labelledby="parent-modal-title"
-			aria-describedby="parent-modal-description"
-		>
-			<Box sx={{ ...style, backgroundColor: colors.blueAccent[800] }}>
+		<Modal open={props.show} closeAfterTransition>
+      <Fade in={props.show} timeout={1000}>
+			<Box
+				sx={{
+					...style,
+					backgroundColor: colors.primary[100],
+					border: `1px solid ${colors.primary[400]}`,
+				}}
+			>
 				<ModalHeader
 					title="Unsupported network!"
 					subtitle="Please select among allowed networks."
@@ -50,12 +56,10 @@ const NetworkOption: FC<{ show: boolean }> = (props) => {
 							(id, index) => (
 								<Button
 									key={`network-option-${id}`}
+									variant="outlined"
 									fullWidth
 									sx={{
-										"&:hover": {
-											backgroundColor:
-												colors.primary[800],
-										},
+										"&:hover": {},
 										display: "flex",
 										justifyContent: "start",
 										margin: "5px 0 0 0",
@@ -115,20 +119,23 @@ const NetworkOption: FC<{ show: boolean }> = (props) => {
 												}
 											});
 									}}
-									disabled={selectedNetworkId === id}
+									disabled={connection.connectedNetworkId === id}
 								>
 									<img
 										src={`${process.env.PUBLIC_URL}/assets/${networks[id]?.image}`}
 										height="40px"
 										width="40px"
+										style={{
+											border: "1px solid white",
+											backgroundColor: "white",
+											borderRadius: "2px",
+										}}
 									/>
-									<Typography
-										color={colors.grey[100]}
-										marginLeft={2}
-									>
+
+									<Typography marginLeft={2}>
 										{networks[id]?.label}
 									</Typography>
-									{selectedNetworkId === id && (
+									{connection.connectedNetworkId === id && (
 										<CheckCircleOutlineIcon
 											sx={{ marginLeft: "auto" }}
 										/>
@@ -147,7 +154,7 @@ const NetworkOption: FC<{ show: boolean }> = (props) => {
 				{error && (
 					<Box
 						display={"flex"}
-						sx={{ color: colors.redAccent[400] }}
+						sx={{ color: colors.primary[500] }}
 						padding={2}
 					>
 						<ReportProblemIcon />
@@ -158,6 +165,7 @@ const NetworkOption: FC<{ show: boolean }> = (props) => {
 					</Box>
 				)}
 			</Box>
+      </Fade>
 		</Modal>
 	);
 };

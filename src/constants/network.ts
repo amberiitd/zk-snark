@@ -7,6 +7,7 @@ export type Network = {
 	rpcUrls: string[];
 	contractAddress?: string;
 	image?: string;
+  nativeCurrency?: any;
 };
 export const networks: { [key: string]: Network } = {
 	"80001": {
@@ -31,6 +32,11 @@ export const networks: { [key: string]: Network } = {
 		chainId: "3141",
 		rpcUrls: ["https://filecoin-hyperspace.chainstacklabs.com/rpc/v1"],
 		contractAddress: "0x6978d4035dAE8163a155F16a86f2a64ef2827A2B",
+    nativeCurrency: {
+      name: "FIL",
+      symbol: "tFIL",
+      decimals: 18,
+    },
 	},
 	"5001": {
 		image: "/network-5001.svg",
@@ -87,7 +93,7 @@ export const networks: { [key: string]: Network } = {
 };
 // "10200", "534353", "1442", "420", "3141", "5001", "80001"
 export const allowedNetworkIds: { [key: string]: string[] } = {
-	metamask: ["471100"],
+	metamask: ["471100", "80001", "3141"],
 	fuel: ["fuel0"],
 	default: [],
 };

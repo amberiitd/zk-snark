@@ -6,7 +6,7 @@ const InfoBadge: FC<{text: string; color: "primary" | 'warning' | 'success'}> = 
     const theme: any = useTheme();
 	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
     return (
-        <span style={{backgroundColor: colors.greenAccent[400], margin: '0 0 0 10px', fontSize: 10, padding: '1px 5px 1px 5px', borderRadius: '5px'}}>{props.text}</span>
+        <span style={{backgroundColor: colors.primary[500], margin: '0 0 0 10px', fontSize: 10, padding: '1px 5px 1px 5px', borderRadius: '5px'}}>{props.text}</span>
     )
 } 
 

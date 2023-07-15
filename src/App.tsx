@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@emotion/react";
+import { ThemeProvider, useTheme } from "@emotion/react";
 import { CssBaseline } from "@mui/material";
 import { ProSidebarProvider } from "react-pro-sidebar";
 import {
@@ -10,27 +10,26 @@ import {
 	useParams,
 } from "react-router-dom";
 import "./App.css";
-import AppNavBar from "./components/AppNavBar/AppNavBar";
-import AppSideBar from "./components/AppSideBar/AppSideBar";
 import AuthProvider, { AuthContext } from "./contexts/auth";
-import { ColorModeContext, useMode } from "./contexts/theme";
+import { ColorModeContext, tokens, useMode } from "./contexts/theme";
 import HomePage from "./pages/home";
-import LoginPage from "./pages/login";
 import NetworkProvider, { NetworkContext } from "./contexts/network";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import PageContextProvider, { PageContext } from "./contexts/page";
-import OverlayLoader from "./components/OverlayLoader";
 import { ToastContainer, toast } from "react-toastify";
 import { Amplify } from "aws-amplify";
+import AppNavBar from "./components/AppNavBar2";
+import RightConnectDrawer from "./components/RightConnectDrawer";
+import GeneratePage from "./pages/generate";
 
 const vKey = require("./verification_key.json");
 
 Amplify.configure({
-  Auth: {
-    userPoolId: 'ap-south-1_J3VvKKDEN',
-    identityPoolId: 'ap-south-1:a349a6c9-154f-43f5-8f88-66a1e1fdccf5',
-    region: "ap-south-1",
-  },
+	Auth: {
+		userPoolId: "ap-south-1_J3VvKKDEN",
+		identityPoolId: "ap-south-1:a349a6c9-154f-43f5-8f88-66a1e1fdccf5",
+		region: "ap-south-1",
+	},
 	Storage: {
 		AWSS3: {
 			bucket: "general-blockchain", //REQUIRED -  Amazon S3 bucket name
@@ -38,41 +37,6 @@ Amplify.configure({
 		},
 	},
 });
-
-function App2() {
-	const [genProof, setGenProof] = useState<any>();
-	const [verification, setVerification] = useState(false);
-	const generate = async () => {
-		const { proof, publicSignals } = await (
-			window as any
-		).snarkjs.groth16.fullProve(
-			{ a: 1, b: 2 },
-			`${process.env.PUBLIC_URL}/assets/circuit.wasm`,
-			`${process.env.PUBLIC_URL}/assets/circuit_final.zkey`
-		);
-
-		setGenProof(proof);
-		const res = await (window as any).snarkjs.groth16.verify(
-			vKey,
-			publicSignals,
-			proof
-		);
-
-		if (res === true) {
-			setVerification(true);
-		} else {
-			console.log("Invalid proof");
-		}
-	};
-	return (
-		<div className="App">
-			<button onClick={() => generate()}>Generate</button>
-
-			<div>{JSON.stringify(genProof, null, 1)}</div>
-			<div>isVerified: {verification ? "YES" : "NO"}</div>
-		</div>
-	);
-}
 
 function App() {
 	const { theme, toggleColorMode } = useMode();
@@ -87,25 +51,15 @@ function App() {
 								<BrowserRouter>
 									<Routes>
 										<Route
-											path="/login"
-											element={<LoginPage />}
-										/>
-										<Route
 											path="/:path1/*"
-											element={
-												<div className="app">
-													<AppSideBar />
-													<Main />
-												</div>
-											}
+											element={<Main />}
 										/>
 										<Route
 											path="*"
-											element={<Navigate to="/login" />}
+											element={<Navigate to="/app" />}
 										/>
 									</Routes>
 								</BrowserRouter>
-								<OverlayLoader />
 							</PageContextProvider>
 						</AuthProvider>
 					</NetworkProvider>
@@ -117,12 +71,17 @@ function App() {
 }
 
 const Main = () => {
+	const theme: any = useTheme();
+	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
 	const { account } = useContext(AuthContext);
 	const { setContract, setWallet } = useContext(NetworkContext);
 	const navigate = useNavigate();
 	const { path1 } = useParams();
-	const { setUserDataQuery } = useContext(PageContext);
-
+	const {} = useContext(PageContext);
+	const notfound = useMemo(
+		() => !["app", "generate", "share"].includes(path1 || ""),
+		[path1]
+	);
 	useEffect(() => {
 		if (!account?.code) {
 			setContract(undefined);
@@ -132,27 +91,19 @@ const Main = () => {
 		}
 	}, [account]);
 
-	const onUserDataCallFailure = (error: any) => {
-		setUserDataQuery({ loading: false });
-	};
-
 	return (
-		<main className="content">
-			<AppNavBar search profile />
-			{
-				<>
-					{path1 === "app" ? (
-						<HomePage />
-					) : path1 === "in" ? (
-						<Navigate to="/app" />
-					) : path1 === "" ? (
-						<Navigate to="/app" />
-					) : (
-						<Navigate to="/notfound" />
-					)}
-					{/* <PushChatSupport /> */}
-				</>
-			}
+		<main
+			className="app"
+			style={{
+				background: `linear-gradient(${colors.bg[100]}, ${colors.primary[100]})`,
+				position: "relative",
+			}}
+		>
+			<AppNavBar />
+			{path1 === "app" && <HomePage />}
+			{path1 === "generate" && <GeneratePage />}
+			{notfound && <Navigate to={"/app"} />}
+			<RightConnectDrawer />
 		</main>
 	);
 };

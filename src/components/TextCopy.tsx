@@ -1,14 +1,17 @@
-import { Box, Button, IconButton } from "@mui/material";
+import { Box, Button, IconButton, Typography } from "@mui/material";
 import { FC, useEffect, useMemo, useState } from "react";
 import ContentPasteOutlinedIcon from "@mui/icons-material/ContentPasteOutlined";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import { useTheme } from "@emotion/react";
 import { tokens } from "../contexts/theme";
 import { toast } from "react-toastify";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
 
 interface TextCopyProps {
 	text: string;
 	title?: string;
+	label?: string;
 	hidden?: boolean;
 }
 
@@ -31,25 +34,48 @@ const TextCopy: FC<TextCopyProps> = (props) => {
 			setTimer(undefined);
 		}
 	}, [copied]);
-    const placeholder = <Box display={'inline-flex'} sx={{height: '15px', width: '15px'}}></Box>;
+	const placeholder = (
+		<Box
+			display={"inline-flex"}
+			sx={{ height: "15px", width: "15px" }}
+		></Box>
+	);
 	return !props.hidden ? (
-		<IconButton
+		<Typography
+			variant="h4"
+			ml={2}
+			fontWeight={700}
+			p={1}
+			sx={{
+				"&:hover": {
+					backgroundColor: colors.primary[300],
+				},
+
+				borderRadius: 5,
+				cursor: "pointer",
+			}}
 			title={title}
 			onClick={() => {
 				navigator.clipboard.writeText(props.text);
 				setCopied(true);
 				setTitle("Copied");
 			}}
-			size="small"
-			sx={{ "&:hover": { backgroundColor: colors.primary[400] } }}
 		>
+			{/* {toUpper(
+							account.code.slice(0, 6) +
+								"..." +
+								account.code.slice(account.code.length - 4)
+						)} */}
+			{props.label || props.text}
 			{copied ? (
-				<AssignmentTurnedInOutlinedIcon sx={{ fontSize: "10px" }} />
+				<TaskAltIcon sx={{ paddingTop: "2px", marginLeft: 1 }} />
 			) : (
-				<ContentPasteOutlinedIcon sx={{ fontSize: "10px" }} />
+				<ContentCopyIcon sx={{ paddingTop: "2px", marginLeft: 1 }} />
 			)}
-		</IconButton>
-	) : placeholder;
+		</Typography>
+	) : (
+		placeholder
+	);
 };
 
 export default TextCopy;

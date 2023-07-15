@@ -1,43 +1,35 @@
-import { createContext, FC, useEffect, useState } from "react";
+import { useMediaQuery } from "@mui/material";
+import { noop } from "lodash";
+import { createContext, FC, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 
 export const PageContext = createContext<{
+  connectDrawer: boolean;
+  setConnectDrawer: React.Dispatch<React.SetStateAction<boolean>>;
+  screenSize: "sm" | "lg";
 	navigationOff: boolean;
 	setNavigationOff: React.Dispatch<React.SetStateAction<boolean>>;
-	searchText: string;
-	setSearchText: React.Dispatch<React.SetStateAction<string>>;
-	debouncedSearchText: string;
-	userDataQuery: { loading: boolean };
-	setUserDataQuery: React.Dispatch<
-		React.SetStateAction<{ loading: boolean }>
-	>;
 }>({
+  connectDrawer: false,
+  setConnectDrawer: noop,
+  screenSize: 'lg',
 	navigationOff: false,
-	setNavigationOff: () => {},
-	searchText: "",
-	setSearchText: () => {},
-	userDataQuery: { loading: false },
-	setUserDataQuery: () => {},
-	debouncedSearchText: "",
+	setNavigationOff: noop,
 });
 const PageContextProvider: FC<{ children: any }> = ({ children }) => {
-	const [searchText, setSearchText] = useState("");
-	const [userDataQuery, setUserDataQuery] = useState<{ loading: boolean }>({
-		loading: false,
-	});
+  const largeScreen = useMediaQuery('(min-width: 600px)')
 	const [navigationOff, setNavigationOff] = useState<boolean>(false);
-	const [debouncedSearchText, _] = useDebounce(searchText, 500);
+  const screenSize = useMemo(() => largeScreen? 'lg': 'sm', [largeScreen])
+  const [connectDrawer, setConnectDrawer] = useState(false);
 
 	return (
 		<PageContext.Provider
 			value={{
-				searchText,
-				setSearchText,
-				userDataQuery,
-				setUserDataQuery,
+        connectDrawer,
+        setConnectDrawer,
+        screenSize,
 				navigationOff,
 				setNavigationOff,
-				debouncedSearchText,
 			}}
 		>
 			{children}

@@ -7,32 +7,35 @@ import {
 	useState,
 } from "react";
 import Web3 from "web3";
-import NetworkOption from "../components/NetworkOption/NetworkOption";
 import { allowedNetworkIds, networks } from "../constants/network";
+import { noop } from "lodash";
 
 export const ABI = require("../abi.json");
 export const web3 = new Web3(window.ethereum);
 export type WalletProvider = "metamask" | "fuel" | undefined;
 export type Wallet = { provider: WalletProvider; api: any };
-
+export type NetworkConnection = {
+	state: "connecting" | "connected" | "disconnected" | "error";
+	connectingNetworkId?: string;
+  connectedNetworkId?: string;
+};
 export const NetworkContext = createContext<{
+	connection: NetworkConnection;
+	setConnection: React.Dispatch<React.SetStateAction<NetworkConnection>>;
 	contract: any;
 	setContract: React.Dispatch<React.SetStateAction<any>>;
-	selectedNetworkId?: string;
 	networkOption?: boolean;
-	setSelectedNetworkId: React.Dispatch<
-		React.SetStateAction<string | undefined>
-	>;
 	setNetworkOption: React.Dispatch<React.SetStateAction<boolean>>;
 	wallet?: Wallet;
 	setWallet: React.Dispatch<React.SetStateAction<Wallet | undefined>>;
 	fuel?: any;
 }>({
+	connection: { state: "disconnected" },
+	setConnection: noop,
 	contract: undefined,
-	setContract: () => {},
-	setSelectedNetworkId: () => {},
-	setNetworkOption: () => {},
-	setWallet: () => {},
+	setContract: noop,
+	setNetworkOption: noop,
+	setWallet: noop,
 });
 
 const NetworkProvider: FC<{ children: any }> = ({ children }) => {
@@ -44,15 +47,15 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 	});
 	const [contract, setContract] = useState<any>();
 	const [networkOption, setNetworkOption] = useState(false);
-	const [selectedNetworkId, setSelectedNetworkId] = useState<
-		string | undefined
-	>();
 	const [fuel, setFuel] = useState<any>();
+	const [connection, setConnection] = useState<NetworkConnection>({
+		state: "disconnected",
+	});
 
 	useEffect(() => {
 		// method: net_version, would give decimal string for chaninId
 		if (wallet?.provider === "fuel") {
-            setSelectedNetworkId('fuel0')
+			setConnection({ state: "connected", connectedNetworkId: "fuel0" });
 			return;
 		}
 
@@ -63,12 +66,9 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 				!chainId ||
 				!allowedNetworkIds["metamask"].includes(decimalString)
 			) {
-				setNetworkOption(true);
-				setSelectedNetworkId(undefined);
+				setConnection({ state: "disconnected" });
 			} else {
-				setNetworkOption(false);
-				setSelectedNetworkId(decimalString);
-				console.log(networks[decimalString].contractAddress);
+				setConnection({ state: "connected", connectedNetworkId: decimalString });
 				// setContract(
 				// 	new web3.eth.Contract(
 				// 		ABI,
@@ -80,15 +80,15 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 
 		if (wallet?.provider === "metamask") {
 			if (!window.ethereum) {
-				setNetworkOption(true);
+				setConnection({ state: "disconnected" });
 				return;
 			} else {
+				setConnection({ state: "connecting" });
 				window.ethereum
 					.request({ method: "eth_chainId" })
 					.then(handleEthereumNetworkChange)
 					.catch((err: any) => {
-						console.log(err);
-						setNetworkOption(true);
+						setConnection({ state: "disconnected" });
 					});
 				window.ethereum.on("chainChanged", handleEthereumNetworkChange);
 
@@ -105,10 +105,10 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 	return (
 		<NetworkContext.Provider
 			value={{
+				connection,
+				setConnection,
 				contract,
 				setContract,
-				selectedNetworkId,
-				setSelectedNetworkId,
 				networkOption,
 				setNetworkOption,
 				wallet,
@@ -117,7 +117,6 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 			}}
 		>
 			{children}
-			<NetworkOption show={networkOption} />
 		</NetworkContext.Provider>
 	);
 };

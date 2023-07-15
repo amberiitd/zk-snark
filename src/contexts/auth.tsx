@@ -1,5 +1,5 @@
 import { createContext, FC, useContext, useEffect, useState } from "react";
-import { isEmpty } from "lodash";
+import { isEmpty, noop } from "lodash";
 import { NetworkContext, WalletProvider } from "./network";
 import { networks } from "../constants/network";
 import { toast } from "react-toastify";
@@ -12,14 +12,13 @@ export const AuthContext = createContext<{
 	setAccount: React.Dispatch<React.SetStateAction<Account | undefined>>;
 	ethLogin: (provider?: "metamask" | "fuel") => Promise<void>;
 }>({
-	setPrvtKey: () => {},
-	setAccount: () => {},
+	setPrvtKey: noop,
+	setAccount: noop,
 	ethLogin: async () => {},
 });
 
 const AuthProvider: FC<{ children: any }> = ({ children }) => {
-	const { setWallet, wallet, setContract, fuel, selectedNetworkId } =
-		useContext(NetworkContext);
+	const { setWallet, wallet, setContract, fuel } = useContext(NetworkContext);
 	const [prvtKey, setPrvtKey] = useState<string | undefined>();
 	const storageAccount = localStorage.getItem("l-earn-account");
 	const [account, setAccount] = useState<Account | undefined>(
@@ -46,11 +45,11 @@ const AuthProvider: FC<{ children: any }> = ({ children }) => {
 						api:
 							provider === "metamask"
 								? window.ethereum
-								: undefined
+								: undefined,
 					});
 				})
 				.catch((err: any) => {
-          toast.error(err.message);
+					toast.error(err.message);
 					setAccount(undefined);
 				});
 		} catch (err) {
@@ -92,7 +91,7 @@ const AuthProvider: FC<{ children: any }> = ({ children }) => {
 						}
 					})
 					.catch((err: any) => {
-            toast.error(err.message);
+						toast.error(err.message);
 						setAccount(undefined);
 					});
 			} catch (err) {

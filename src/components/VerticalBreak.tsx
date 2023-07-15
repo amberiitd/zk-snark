@@ -10,8 +10,8 @@ const VerticalBreak: FC = () => {
 			style={{
 				width: "2px",
 				margin: "0 5px 0 5px",
-                backgroundColor: colors.primary[900],
-                boxShadow: '2'
+        backgroundColor: colors.primary[900],
+        boxShadow: '2'
 			}}
 		>
 			{" "}

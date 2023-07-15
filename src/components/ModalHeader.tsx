@@ -27,23 +27,20 @@ const ModalHeader: FC<{
 			alignItems="start"
 			padding={"15px 0 15px 0"}
 			sx={{
-				borderWidth: "0 0 3px 0",
+				borderWidth: "0 0 1px 0",
 				borderStyle: "solid",
-				borderColor: colors.grey[800],
 				px: 4,
 			}}
 		>
 			<Box>
 				<Typography
 					variant="h3"
-					color={colors.grey[100]}
 					paddingLeft={1}
 				>
 					{title}
 				</Typography>
 				<Typography
 					variant="h6"
-					color={colors.grey[100]}
 					paddingLeft={1}
 				>
 					{subtitle}

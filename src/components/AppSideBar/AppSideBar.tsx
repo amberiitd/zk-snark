@@ -47,9 +47,7 @@ const Item: FC<{
 		<MenuItem
 			disabled={!!navigationOff}
 			active={to.startsWith(`/${selected}`)}
-			style={{
-				color: colors.grey[100],
-			}}
+			style={{}}
 			onClick={() => navigate(to)}
 			icon={icon}
 			// href={to}
@@ -68,7 +66,7 @@ const AppSideBar: FC = () => {
 	const { path1 } = useParams();
 
 	const [selected, setSelected] = useState(path1 || "");
-	const { selectedNetworkId, setNetworkOption } = useContext(NetworkContext);
+	const { connection, setNetworkOption } = useContext(NetworkContext);
 
 	useEffect(() => {
 		setSelected(path1 || "");
@@ -76,34 +74,12 @@ const AppSideBar: FC = () => {
 
 	return (
 		<AppSideBarContext.Provider value={{ selected, setSelected }}>
-			{/* <Box
-				sx={{
-					"& .ps-sidebar-root": {
-						background: `${colors.primary[400]} !important`,
-					},
-					"& .pro-icon-wrapper": {
-						backgroundColor: "transparent !important",
-					},
-					"& .pro-inner-item": {
-						padding: "5px 35px 5px 20px !important",
-					},
-					"& .pro-inner-item:hover": {
-						color: "#868dfb !important",
-					},
-					"& .pro-menu-item.active": {
-						color: "#6870fa !important",
-					},
-				}}
-			>
-				
-			</Box> */}
-			{/* <Box position='sticky' top={0} zIndex={12} height={`${height}px`} border='1px solid red'> */}
 			<Sidebar
 				rootStyles={{
 					[`.${sidebarClasses.container}`]: {
-						backgroundColor: colors.primary[400],
+						backgroundColor: colors.primary[150],
 					},
-					borderColor: colors.primary[900],
+					borderColor: colors.primary[200],
 					height: "100vh",
 					position: "sticky",
 					top: 0,
@@ -117,67 +93,64 @@ const AppSideBar: FC = () => {
 							"& .ps-active": {
 								color: "#6870fa !important",
 							},
+							paddingTop: 5,
 						},
 						button: {
 							// [`&.${menuClasses.disabled}`]: {
 							// 	color: themes[theme].menu.disabled.color,
 							// },
 							"&:hover": {
-								backgroundColor: colors.blueAccent[800],
-								color: "#868dfb !important",
+								backgroundColor: `${colors.primary[300]} !important`,
 							},
 							"&": {
 								margin: "0 10px 0 10px",
 								padding: "0 10px 0 10px",
-								borderRadius: "10px",
+								borderRadius: "3px"
 							},
 						},
 					}}
 				>
 					<MenuItem
-						onClick={() => collapseSidebar(!collapsed)}
-						icon={collapsed ? <MenuOutlinedIcon /> : undefined}
+					// icon={collapsed ? <MenuOutlinedIcon /> : undefined}
+            rootStyles={{
+              "&:hover": {
+								backgroundColor: `transparent !important`,
+							},
+            }}
 					>
-						{!collapsed && (
-							<Box
-								display="flex"
-								justifyContent="space-between"
-								alignItems="center"
-								ml="15px"
-							>
+						<Box
+							display="flex"
+							justifyContent="space-between"
+							alignItems="center"
+              sx={{cursor: 'default'}}
+						>
+							{!collapsed && (
 								<Box
 									display="flex"
 									alignItems="center"
 									sx={{
-										backgroundColor: colors.blueAccent[800],
 										px: 1,
 										borderRadius: 2,
 									}}
+                  ml="15px"
 								>
 									<img
 										src={`${process.env.PUBLIC_URL}/assets/logo2.png`}
 										height="20px"
 										width="20px"
 									/>
-									<Typography
-										variant="h3"
-										color={colors.grey[100]}
-										paddingLeft={1}
-									>
+									<Typography variant="h3" paddingLeft={1}>
 										zk-GATE
 									</Typography>
 								</Box>
-
-								<IconButton
-									onClick={() => collapseSidebar(!collapsed)}
-									style={{
-										color: colors.grey[100],
-									}}
-								>
-									<MenuOutlinedIcon />
-								</IconButton>
-							</Box>
-						)}
+							)}
+							<IconButton
+								onClick={() => collapseSidebar(!collapsed)}
+								style={{}}
+							>
+								<MenuOutlinedIcon />
+							</IconButton>
+						</Box>
 					</MenuItem>
 					<Box>
 						<Item
@@ -185,27 +158,6 @@ const AppSideBar: FC = () => {
 							to="/app"
 							icon={<TimelineOutlinedIcon />}
 						/>
-
-						{/* <Typography
-							variant="h6"
-							color={colors.grey[300]}
-							sx={{
-								m: `15px 0 5px ${collapsed ? "15px" : "25px"}`,
-							}}
-						>
-							Personal
-						</Typography> */}
-						{/* <Item
-							title="My courses"
-							to="/mycourses"
-							icon={<MenuBookOutlinedIcon />}
-						/> */}
-
-						{/* <Item
-							title="Tokens"
-							to="/tokens"
-							icon={<GridViewOutlinedIcon />}
-						/> */}
 
 						<Box
 							marginTop={"auto"}
@@ -219,12 +171,11 @@ const AppSideBar: FC = () => {
 							)} */}
 							<Typography
 								fontWeight={645}
-								color={colors.greenAccent[400]}
 								marginRight={1}
 								// className='text-cut'
 							>
-								{selectedNetworkId
-									? networks[selectedNetworkId].label
+								{connection.connectedNetworkId
+									? networks[connection.connectedNetworkId].label
 									: "-"}
 							</Typography>
 							<IconButton
@@ -232,7 +183,6 @@ const AppSideBar: FC = () => {
 								sx={{
 									marginLeft: "auto",
 									marginRight: "5px",
-									backgroundColor: colors.primary[900],
 								}}
 								onClick={() => setNetworkOption(true)}
 							>
