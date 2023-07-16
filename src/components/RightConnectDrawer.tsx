@@ -24,6 +24,7 @@ import { isEmpty, toUpper } from "lodash";
 import { MetaMaskAvatar } from "react-metamask-avatar";
 import LogoutIcon from "@mui/icons-material/Logout";
 import TextCopy from "./TextCopy";
+import { toast } from "react-toastify";
 
 const RightConnectDrawer = () => {
 	const theme: any = useTheme();
@@ -186,7 +187,10 @@ const UserProfile = () => {
 					<Button
 						variant="outlined"
 						sx={{ ml: "auto", px: 0 }}
-						onClick={() => setAccount(undefined)}
+						onClick={() => {
+							setAccount(undefined);
+							toast.info("User logged out!");
+						}}
 					>
 						<LogoutIcon />
 					</Button>

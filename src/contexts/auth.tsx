@@ -27,33 +27,28 @@ const AuthProvider: FC<{ children: any }> = ({ children }) => {
 
 	const ethLogin = async (provider: WalletProvider = "metamask") => {
 		try {
-			(provider === "metamask"
+			await (provider === "metamask"
 				? window.ethereum.request({
 						method: "eth_requestAccounts",
 				  })
 				: new Promise<string[]>((resolve, reject) => {})
-			)
-				.then(async (accounts: string[]) => {
-					console.log(accounts);
-					if (accounts.length === 0) {
-						console.log("no accounts found");
-						return null;
-					}
-					setAccount({ code: accounts[0], source: "eth" });
-					setWallet({
-						provider,
-						api:
-							provider === "metamask"
-								? window.ethereum
-								: undefined,
-					});
-				})
-				.catch((err: any) => {
-					toast.error(err.message);
-					setAccount(undefined);
+			).then(async (accounts: string[]) => {
+				console.log(accounts);
+				if (accounts.length === 0) {
+					console.log("no accounts found");
+					return null;
+				}
+				setAccount({ code: accounts[0], source: "eth" });
+				setWallet({
+					provider,
+					api: provider === "metamask" ? window.ethereum : undefined,
 				});
-		} catch (err) {
-			throw Error("LoginError: Etherium is not connected");
+				toast.success("Login successfull.");
+			});
+		} catch (err: any) {
+			console.error(err);
+			toast.error("LoginError: Etherium is not connected");
+			setAccount(undefined);
 		}
 	};
 
@@ -88,6 +83,7 @@ const AuthProvider: FC<{ children: any }> = ({ children }) => {
 						} else {
 							console.log("account changed or do not exist");
 							setAccount(undefined);
+							toast.info("User logged out!");
 						}
 					})
 					.catch((err: any) => {
@@ -103,6 +99,7 @@ const AuthProvider: FC<{ children: any }> = ({ children }) => {
 	useEffect(() => {
 		const handleAccountChange = (accounts: Array<string>) => {
 			if (isEmpty(accounts) || accounts[0] !== account?.code) {
+				if (account?.code) toast.info("User logged out!");
 				setAccount(undefined);
 			}
 		};

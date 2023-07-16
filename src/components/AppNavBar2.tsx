@@ -1,6 +1,6 @@
 import { Button, IconButton, Stack, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
-import { useContext } from "react";
+import { FC, useContext } from "react";
 import { ColorModeContext } from "../contexts/theme";
 import { useTheme } from "@emotion/react";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
@@ -14,7 +14,8 @@ import { Link } from "react-router-dom";
 const AppNavBar = () => {
 	return (
 		<Box display={"flex"} p={2} alignItems={"center"}>
-      <AppIcon />
+			<AppIcon />
+			<NavLinks />
 			<Stack marginLeft={"auto"} spacing={2} direction={"row"}>
 				<ThemeToggler />
 				<NetworkSelector />
@@ -25,6 +26,25 @@ const AppNavBar = () => {
 };
 
 export default AppNavBar;
+
+const NavLinks = () => {
+	const theme: any = useTheme();
+	const style = {
+		textDecoration: "none",
+		fontWeight: 600,
+		color: theme.palette.primary.main,
+	};
+	return (
+		<Stack direction={"row"} spacing={2} marginLeft={3}>
+			<Link to="/generate" style={style}>
+				Generate
+			</Link>
+			<Link to="/share" style={style}>
+				Share
+			</Link>
+		</Stack>
+	);
+};
 
 const AppIcon = () => {
 	return (
@@ -52,7 +72,7 @@ const ThemeToggler = () => {
 	);
 };
 
-const Connector = () => {
+export const Connector: FC<{ label?: string }> = ({ label = "Connect" }) => {
 	const { screenSize, connectDrawer, setConnectDrawer } =
 		useContext(PageContext);
 	const { account } = useContext(AuthContext);
@@ -73,7 +93,7 @@ const Connector = () => {
 					</Typography>
 				</>
 			) : (
-				"Connect"
+				label
 			)}
 		</Button>
 	);

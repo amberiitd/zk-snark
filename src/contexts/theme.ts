@@ -21,6 +21,9 @@ export const tokens = (mode: ThemeMode) => ({
 					800: "#F8F8F8",
 					900: "#FFFFFF",
 				},
+        red: {
+          100: "#FF0800"
+        }
 		  }
 		: {
         bg: {
@@ -37,7 +40,10 @@ export const tokens = (mode: ThemeMode) => ({
 					700: "#202020",
 					800: "#181818",
           900: "#080808",
-				}
+				},
+        red: {
+          100: "#FF0800"
+        }
 		  }),
 });
 

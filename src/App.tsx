@@ -16,7 +16,7 @@ import HomePage from "./pages/home";
 import NetworkProvider, { NetworkContext } from "./contexts/network";
 import { useContext, useEffect, useMemo, useState } from "react";
 import PageContextProvider, { PageContext } from "./contexts/page";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { Amplify } from "aws-amplify";
 import AppNavBar from "./components/AppNavBar2";
 import RightConnectDrawer from "./components/RightConnectDrawer";
@@ -60,11 +60,19 @@ function App() {
 										/>
 									</Routes>
 								</BrowserRouter>
+								<ToastContainer
+									position='bottom-left'
+									autoClose={5000}
+									hideProgressBar={false}
+									closeOnClick
+									pauseOnFocusLoss
+									pauseOnHover
+									theme={theme.palette.mode}
+								/>
 							</PageContextProvider>
 						</AuthProvider>
 					</NetworkProvider>
 				</ProSidebarProvider>
-				<ToastContainer theme={theme.palette.mode} />
 			</ThemeProvider>
 		</ColorModeContext.Provider>
 	);
@@ -97,6 +105,7 @@ const Main = () => {
 			style={{
 				background: `linear-gradient(${colors.bg[100]}, ${colors.primary[100]})`,
 				position: "relative",
+        overflowX: 'hidden'
 			}}
 		>
 			<AppNavBar />

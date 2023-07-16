@@ -9,6 +9,9 @@ import { toast } from "react-toastify";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import Spinner from "./Spinner1";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
 
 const NetworkSelector = () => {
 	const [open, setOpen] = useState(false);
@@ -87,26 +90,41 @@ const NetworkSelector = () => {
 				onClick={() => setOpen((open) => !open)}
 				size="small"
 				sx={{
-					backgroundColor: open ? colors.primary[200] : "unset",
-					maxWidth: "100px",
-          px: 1
+					borderColor: open ? colors.primary[800] : "transparent",
+					backgroundColor: open ? colors.primary[300] : "unset",
+					maxWidth: "125px",
+					px: 1,
 				}}
-				variant={open ? "outlined" : "text"}
+				variant={"outlined"}
+				disabled={!wallet?.provider}
 			>
-				{connection.connectedNetworkId ? (
-          <Typography className="text-cut">{networks[connection.connectedNetworkId].label}</Typography>
-					
+				{connection.connectedNetworkId && wallet?.provider ? (
+					<>
+						<img
+							src={`${process.env.PUBLIC_URL}/assets/${
+								networks[connection.connectedNetworkId]?.image
+							}`}
+							height="20px"
+							width="20px"
+						/>
+						<Typography className="text-cut" ml={1}>
+							{networks[connection.connectedNetworkId].label}
+						</Typography>
+					</>
 				) : connection.state === "connecting" ? (
 					<Spinner style={{ marginLeft: "auto" }} />
 				) : (
 					<WarningAmberRoundedIcon />
 				)}
+				{open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
 			</Button>
 			<Menu
 				id="network-menu"
 				anchorEl={anchor.current}
 				open={open}
-				onClose={() => setOpen(false)}
+				onClose={() => {
+					if (connection.state !== "connecting") setOpen(false);
+				}}
 				MenuListProps={{
 					"aria-labelledby": "network-select",
 				}}
@@ -122,6 +140,7 @@ const NetworkSelector = () => {
 				{allowedNetworkIds[wallet?.provider || "default"].map(
 					(id, i) => (
 						<MenuItem
+							key={`network-menu-${i}`}
 							onClick={() => handleNetworkSwitch(id)}
 							disabled={
 								connection.connectedNetworkId === id ||
@@ -150,7 +169,7 @@ const NetworkSelector = () => {
 
 							{connection.state === "connected" &&
 								connection.connectedNetworkId === id && (
-									<CheckCircleOutlineIcon
+									<TaskAltIcon
 										sx={{ marginLeft: "auto" }}
 									/>
 								)}

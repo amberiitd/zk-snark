@@ -1,38 +1,15 @@
 import { useTheme } from "@emotion/react";
 import Box from "@mui/material/Box";
-import {
-	FC,
-	useContext,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useState,
-} from "react";
+import { FC, createContext, useContext, useMemo, useState } from "react";
 import { tokens } from "../contexts/theme";
-import {
-	Button,
-	Divider,
-	FormControl,
-	IconButton,
-	InputLabel,
-	Link,
-	MenuItem,
-	Modal,
-	Select,
-	Typography,
-} from "@mui/material";
-import GoogleIcon from "@mui/icons-material/Google";
+import { Button, Skeleton, Stack, Tab, Tabs, Typography } from "@mui/material";
 import jwt_decode from "jwt-decode";
 import ReactJson from "react-json-view";
-import { builder } from "../util/witness_calculator";
 import { AuthContext } from "../contexts/auth";
 import { Storage } from "aws-amplify";
-import { isEmpty } from "lodash";
+import { isEmpty, noop } from "lodash";
 import { ZK_GATE_CONTRACT } from "../constants/network";
 import moment from "moment";
-import CloseIcon from "@mui/icons-material/Close";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ReportIcon from "@mui/icons-material/Report";
 import { PageContext } from "../contexts/page";
 import {
 	addDoc,
@@ -42,16 +19,43 @@ import {
 	syncAccountNonce,
 } from "db3.js";
 import GradientText from "../components/GradientText";
+import SlideContainer from "../components/SlideContainer";
+import SlideStepper from "../components/SlideStepper";
+import { clientApps } from "../constants/general";
+import ClientAppCard from "../components/ClientAppCard";
+import { Connector } from "../components/AppNavBar2";
+import InfoIcon from "@mui/icons-material/Info";
 
-const style = {
-	position: "absolute",
-	top: "50%",
-	left: "50%",
-	transform: "translate(-50%, -50%)",
-	width: "27rem",
-	borderRadius: 3,
-	boxShadow: 24,
+export type TabInfo = {
+	current: number;
+	previous: number;
 };
+
+export const GeneratePageContext = createContext<{
+	proof: any;
+	setProof: React.Dispatch<any>;
+	googleUser: any;
+	setGoogleUser: React.Dispatch<any>;
+	selectedApp: string;
+	setSelectedApp: React.Dispatch<React.SetStateAction<string>>;
+	activeStep: TabInfo;
+	setActiveStep: React.Dispatch<React.SetStateAction<TabInfo>>;
+	handleFormViewChange: (e: any, step: number) => void;
+	generate: (address: string, payload: any) => Promise<void>;
+	mintNft: () => Promise<void>;
+}>({
+	proof: undefined,
+	setProof: noop,
+	googleUser: undefined,
+	setGoogleUser: noop,
+	selectedApp: "learn",
+	setSelectedApp: noop,
+	activeStep: { current: 0, previous: -1 },
+	setActiveStep: noop,
+	handleFormViewChange: noop,
+	generate: async () => {},
+	mintNft: async () => {},
+});
 
 const vKey = require("../verification_key.json");
 
@@ -79,6 +83,10 @@ const colName = "nft-metadata";
 const GeneratePage: FC = () => {
 	const theme: any = useTheme();
 	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
+	const [activeStep, setActiveStep] = useState<TabInfo>({
+		current: 0,
+		previous: -1,
+	});
 	const { account } = useContext(AuthContext);
 	const [googleUser, setGoogleUser] = useState<any>();
 	const [timeTaken, setTimeTaken] = useState<any>();
@@ -92,6 +100,12 @@ const GeneratePage: FC = () => {
 		code: 0,
 	});
 
+	const handleFormViewChange = (e: any, step: number) =>
+		setActiveStep(({ current, previous }) => ({
+			current: step,
+			previous: current,
+		}));
+
 	const pushToDb3 = async (metadata: any) => {
 		// add a document
 		await syncAccountNonce(client);
@@ -100,40 +114,7 @@ const GeneratePage: FC = () => {
 		const { id } = await addDoc(collection, metadata);
 	};
 
-	const generate = async (address: string, payload: any) => {
-		// setUserDataQuery({ loading: true });
-		const { proof, publicSignals } = await (
-			window as any
-		).snarkjs.groth16.fullProve(
-			{
-				sec_key: process.env.REACT_APP_PROOF_SECRET_KEY,
-				pub_key: process.env.REACT_APP_PROOF_PUBLIC_KEY,
-				name: encodeToBigInt(payload.name),
-				location: encodeToBigInt(payload.iss),
-				contact_number: encodeToBigInt(payload.email),
-				photo: encodeToBigInt(payload.picture),
-				account_address: BigInt(address),
-			},
-			`${process.env.PUBLIC_URL}/assets/circuit.wasm`,
-			`${process.env.PUBLIC_URL}/assets/circuit_final.zkey`
-		);
-
-		setProof(proof);
-		setNullifier(publicSignals);
-		const res = await (window as any).snarkjs.groth16.verify(
-			vKey,
-			publicSignals,
-			proof
-		);
-
-		if (res === true) {
-			setVerification("true");
-		} else {
-			console.log("Invalid proof");
-		}
-	};
-
-	useEffect(() => {
+	const mintNft = async () => {
 		// call client.store, passing in the image & metadata
 		// nftstorage.store({
 		//     address: account?.code
@@ -179,7 +160,6 @@ const GeneratePage: FC = () => {
 				if (exists) {
 					console.log("user exists:", exists);
 					setResultModal({ show: true, code: 2 });
-					// setUserDataQuery({ loading: false });
 					return;
 				}
 				console.log("exists", exists);
@@ -194,7 +174,6 @@ const GeneratePage: FC = () => {
 					.then(() => {
 						console.log("successful login");
 						setResultModal({ show: true, code: 1 });
-						// setUserDataQuery({ loading: false });
 					});
 
 				await pushToDb3(metadata).then(() => {
@@ -202,140 +181,104 @@ const GeneratePage: FC = () => {
 				});
 			})
 			.catch((error) => {
-				// setUserDataQuery({ loading: false });
 				setResultModal({ show: true, code: 0 });
 				console.log(error);
 			});
-		// console.log('metadata:', metadata)
-		// console.log('proof:', proof)
-	}, [proof]);
+	};
 
-	useLayoutEffect(() => {
-		const handleCredentialResponse = (response: any) => {
-			// console.log("credential_response", response);
-			fetch(
-				"https://oauth2.googleapis.com/token?" +
-					new URLSearchParams({
-						code: response.code,
-						client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "",
-						client_secret:
-							process.env.REACT_APP_GOOGLE_CLIENT_SECRET || "",
-						grant_type: "authorization_code",
-						redirect_uri: window.location.origin,
-					}),
-				{ method: "POST" }
-			)
-				.then((response) => response.json())
-				.then((data) => {
-					console.log(data);
-					const userJson = jwt_decode(data.id_token);
-					setGoogleUser(userJson);
-				});
-		};
-		console.log(process.env.REACT_APP_GOOGLE_CLIENT_ID);
-		/* global google */
-		const client = google.accounts.oauth2.initCodeClient({
-			client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-			scope: "email profile ",
-			callback: handleCredentialResponse,
-		});
-		document
-			.getElementById("google-login")
-			?.addEventListener("click", () => {
-				client.requestCode();
-			});
-	}, []);
+	const generate = async (address: string, payload: any) => {
+		// setUserDataQuery({ loading: true });
+		const { proof, publicSignals } = await (
+			window as any
+		).snarkjs.groth16.fullProve(
+			{
+				sec_key: process.env.REACT_APP_PROOF_SECRET_KEY,
+				pub_key: process.env.REACT_APP_PROOF_PUBLIC_KEY,
+				name: encodeToBigInt(payload.name),
+				location: encodeToBigInt(payload.iss),
+				contact_number: encodeToBigInt(payload.email),
+				photo: encodeToBigInt(payload.picture),
+				account_address: BigInt(address),
+			},
+			`${process.env.PUBLIC_URL}/assets/circuit.wasm`,
+			`${process.env.PUBLIC_URL}/assets/circuit_final.zkey`
+		);
+
+		setProof(proof);
+		setNullifier(publicSignals);
+		handleFormViewChange(undefined, activeStep.current + 1);
+		// const res = await (window as any).snarkjs.groth16.verify(
+		// 	vKey,
+		// 	publicSignals,
+		// 	proof
+		// );
+
+		// if (res === true) {
+		// 	setVerification("true");
+		// } else {
+		// 	console.log("Invalid proof");
+		// }
+	};
 
 	return (
-		<Box
-			display={"flex"}
-			justifyContent={"center"}
-			// alignItems={"center"}
-			padding={"5% 0 10% 0"}
+		<GeneratePageContext.Provider
+			value={{
+				proof,
+				setProof,
+				googleUser,
+				setGoogleUser,
+				activeStep,
+				setActiveStep,
+				selectedApp,
+				setSelectedApp,
+				handleFormViewChange,
+				generate,
+				mintNft,
+			}}
 		>
-			<Box maxWidth={"600px"}>
-				<GradientText
-					variant="h1"
-					style={{
-						fontWeight: 700,
-						textAlign: "center",
-						fontSize: "400%",
-					}}
-				>
-					Select one of your favorite apps.
-				</GradientText>
-			</Box>
-
-			{/* <Box
+			<Box
+				display={"flex"}
+				justifyContent={"center"}
+				// alignItems={"center"}
+				padding={"5% 0 10% 0"}
 			>
-				<Box display={"flex"}>
-					<FormControl
-						variant="filled"
-						sx={{
-							mr: 1,
-							minWidth: 150,
-							"& .Mui-focused.MuiInputLabel-root": {
-							},
-							"& .Mui-focused .MuiSelect-nativeInput": {
-								borderColor: "red",
-							},
-						}}
+				{isEmpty(account?.code) ? (
+					<Box
+						display={"flex"}
+						justifyContent={"center"}
+						marginTop={15}
 					>
-						<InputLabel id="app-select">Apps</InputLabel>
-						<Select
-							labelId="app-select"
-							sx={
-								{
-									// marginRight: "30px",
-									// width: "150px",
-								}
-							}
-							defaultValue={selectedApp}
-							onChange={(e) => setSelectedApp(e.target.value)}
-						>
-							<MenuItem value={"learn"}>
-								<Box display={"flex"}>
-									<img
-										src={`${process.env.PUBLIC_URL}/assets/logo2.png`}
-										height={20}
-										width={20}
-									/>
-									<Typography marginLeft={1}>
-										LEarn
-									</Typography>
-								</Box>
-							</MenuItem>
-							<MenuItem value={"netflix"}>
+						<Box>
+							<Box display={"flex"} justifyContent={"center"}>
 								<img
-									src={`${process.env.PUBLIC_URL}/assets/netflix-logo.png`}
-									height={20}
-									width={80}
-									alt="Netflix"
+									src={`${process.env.PUBLIC_URL}/assets/connect-wallet.png`}
+									width={400}
 								/>
-							</MenuItem>
-						</Select>
-					</FormControl>
-					<Button
-						id="google-login"
-						variant={"outlined"}
-						sx={{
-							marginRight: "10px",
-							"&:hover": {
-							},
-						}}
-						disabled={selectedApp !== "learn"}
-					>
-						<GoogleIcon />
-						<Typography marginLeft={1}>
-							Generate with Google
-						</Typography>
-					</Button>
-				</Box>
-				{selectedApp !== "learn" && (
-					<Typography color={"red"}>
-						{selectedApp} coming soon!
-					</Typography>
+							</Box>
+							<Stack
+								direction={"row"}
+								justifyContent={"center"}
+								marginTop={5}
+							>
+								<Connector label="Connect wallet" />
+							</Stack>
+						</Box>
+					</Box>
+				) : (
+					<Box>
+						<ClientAppSelection />
+						<AuthorizerSelection />
+						<Approval />
+						<SlideStepper
+							steps={3}
+							activeStep={activeStep.current}
+							onChange={handleFormViewChange}
+						/>
+					</Box>
 				)}
+
+				{/* <Box
+			>
 				{googleUser && (
 					<>
 						<Box
@@ -347,50 +290,14 @@ const GeneratePage: FC = () => {
 							<Typography variant="h6">
 								{`"${selectedApp}" wants to access name, email and locale from following Google user informations. Please click "Generate" only if you consent.`}
 							</Typography>
-							<Button
-								variant={"outlined"}
-								sx={{
-									marginLeft: "10px",
-									"&:hover": {
-									}
-								}}
-								onClick={() => {
-									if (account?.code) {
-										generate(account.code, googleUser);
-									}
-								}}
-							>
-								<Typography marginLeft={1}>Generate</Typography>
-							</Button>
+							
 						</Box>
-
-						<ReactJson
-							src={googleUser}
-							style={{
-								backgroundColor: "whitesmoke",
-								marginTop: 10,
-							}}
-						/>
 					</>
 				)}
 
-				{proof && (
-					<>
-						<Typography variant="h6" marginTop={3}>
-							{" "}
-							Proof
-						</Typography>
-						<ReactJson
-							src={proof}
-							style={{
-								backgroundColor: "whitesmoke",
-								marginTop: 10,
-							}}
-						/>
-					</>
-				)}
+				
 			</Box> */}
-			{/* <Modal
+				{/* <Modal
 				open={resultModal.show}
 				aria-labelledby="parent-modal-title"
 				aria-describedby="parent-modal-description"
@@ -457,8 +364,319 @@ const GeneratePage: FC = () => {
 					</Box>
 				</Box>
 			</Modal> */}
-		</Box>
+			</Box>
+		</GeneratePageContext.Provider>
 	);
 };
 
 export default GeneratePage;
+
+const ClientAppSelection = () => {
+	const {
+		activeStep,
+		setActiveStep,
+		handleFormViewChange,
+		selectedApp,
+		setSelectedApp,
+	} = useContext(GeneratePageContext);
+	return (
+		<SlideContainer
+			show={activeStep.current == 0}
+			direction={
+				activeStep.current > activeStep.previous ? "left" : "right"
+			}
+		>
+			<GradientText
+				variant="h1"
+				style={{
+					fontWeight: 700,
+					textAlign: "center",
+					fontSize: "400%",
+				}}
+			>
+				Select one of your favorite apps.
+			</GradientText>
+			<Stack
+				direction={"row"}
+				justifyContent={"center"}
+				spacing={2}
+				marginTop={5}
+			>
+				{clientApps.map((app, index) => (
+					<ClientAppCard
+						key={`clinet-app-${index}`}
+						{...app}
+						selected={selectedApp === app.id}
+						onClick={() => {
+							setSelectedApp(app.id);
+							handleFormViewChange(null, activeStep.current + 1);
+						}}
+					/>
+				))}
+			</Stack>
+		</SlideContainer>
+	);
+};
+
+const AuthorizerSelection = () => {
+	const theme: any = useTheme();
+	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
+	const { account } = useContext(AuthContext);
+	const { activeStep, selectedApp, setGoogleUser, generate } =
+		useContext(GeneratePageContext);
+	const { setLoading } = useContext(PageContext);
+	const handleCredentialResponse = async (response: any) => {
+		// console.log("credential_response", response);
+		await fetch(
+			"https://oauth2.googleapis.com/token?" +
+				new URLSearchParams({
+					code: response.code,
+					client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "",
+					client_secret:
+						process.env.REACT_APP_GOOGLE_CLIENT_SECRET || "",
+					grant_type: "authorization_code",
+					redirect_uri: window.location.origin,
+				}),
+			{ method: "POST" }
+		)
+			.then((response) => response.json())
+			.then(async (data) => {
+				console.log(data);
+				const userJson = jwt_decode(data.id_token);
+				setGoogleUser(userJson);
+				if (account?.code) {
+					await generate(account.code, userJson);
+				}
+			})
+			.catch((error) => {
+				setLoading(false);
+			});
+		setLoading(false);
+	};
+	const client = google.accounts.oauth2.initCodeClient({
+		client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+		scope: "email profile ",
+		callback: handleCredentialResponse,
+	});
+	// useEffect(() => {
+	// 	document
+	// 		.getElementById("google-login")
+	// 		?.addEventListener("click", () => {
+	// 			client.requestCode();
+	// 		});
+	// }, []);
+	return (
+		<SlideContainer
+			show={activeStep.current == 1}
+			direction={
+				activeStep.current > activeStep.previous ? "left" : "right"
+			}
+		>
+			<GradientText
+				variant="h1"
+				style={{
+					fontWeight: 700,
+					textAlign: "center",
+					fontSize: "400%",
+				}}
+			>
+				Choose and click an authorizer to login to{" "}
+				{clientApps.find((app) => app.id === selectedApp)?.label}.
+			</GradientText>
+			<Stack spacing={3} paddingLeft={8} paddingRight={8} marginTop={5}>
+				<Button
+					id="google-login"
+					variant={"outlined"}
+					size="small"
+					onClick={async () => {
+						setLoading(true);
+						try {
+							const res = await client.requestCode();
+							console.log("requestcode response", res);
+						} catch (error) {
+							setLoading(false);
+						}
+					}}
+				>
+					<img
+						src={`${process.env.PUBLIC_URL}/assets/google-icon.png`}
+					/>
+					<Typography marginLeft={1}>Google</Typography>
+				</Button>
+				<Button variant={"outlined"} size="small" disabled>
+					<img
+						src={`${process.env.PUBLIC_URL}/assets/facebook-icon.png`}
+					/>
+					<Stack marginLeft={1}>
+						<Typography>Facebook</Typography>
+						<Stack direction={"row"}>
+							<InfoIcon
+								sx={{ color: colors.red[100], fontSize: 13, mr: '2px' }}
+							/>
+							<Typography
+								variant="body2"
+								fontSize={10}
+								color={colors.red[100]}
+							>
+								Coming soon
+							</Typography>
+						</Stack>
+					</Stack>
+				</Button>
+			</Stack>
+		</SlideContainer>
+	);
+};
+
+interface TabPanelProps {
+	children?: React.ReactNode;
+	index: number;
+	value: number;
+}
+
+function CustomTabPanel(props: TabPanelProps) {
+	const { children, value, index, ...other } = props;
+
+	return (
+		<div
+			role="tabpanel"
+			hidden={value !== index}
+			id={`nft-tabpanel-${index}`}
+			aria-labelledby={`nft-tab-${index}`}
+			{...other}
+		>
+			{value === index && <Box sx={{ py: 2 }}>{children}</Box>}
+		</div>
+	);
+}
+
+function a11yProps(index: number) {
+	return {
+		id: `nft-tab-${index}`,
+		"aria-controls": `nft-tabpanel-${index}`,
+	};
+}
+
+const Approval = () => {
+	const theme: any = useTheme();
+	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
+	const { activeStep, googleUser, proof, mintNft } =
+		useContext(GeneratePageContext);
+	const [value, setValue] = useState(0);
+
+	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+		setValue(newValue);
+	};
+	return (
+		<SlideContainer
+			show={activeStep.current == 2}
+			direction={
+				activeStep.current > activeStep.previous ? "left" : "right"
+			}
+		>
+			<GradientText
+				variant="h1"
+				style={{
+					fontWeight: 700,
+					textAlign: "center",
+					fontSize: "400%",
+				}}
+			>
+				Need your approval to mint NFT.
+			</GradientText>
+			<Box marginLeft={4} marginRight={4} height={400}>
+				<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+					<Tabs
+						variant="fullWidth"
+						value={value}
+						onChange={handleChange}
+						aria-label="nft-tabs"
+					>
+						<Tab label="User Data" {...a11yProps(0)} />
+						<Tab label="Proof" {...a11yProps(1)} />
+					</Tabs>
+				</Box>
+				<CustomTabPanel value={value} index={0}>
+					{googleUser ? (
+						<ReactJson
+							src={googleUser}
+							style={{
+								overflow: "scroll",
+								height: 320,
+								borderRadius: 5,
+								padding: 5,
+								border: `1px solid ${colors.primary[300]}`,
+							}}
+							theme={
+								theme.palette.mode === "dark"
+									? "bright"
+									: undefined
+							}
+						/>
+					) : (
+						<Skeleton
+							variant="rectangular"
+							sx={{
+								marginLeft: "auto",
+								borderRadius: 1,
+								height: 200,
+							}}
+						/>
+					)}
+				</CustomTabPanel>
+				<CustomTabPanel value={value} index={1}>
+					{proof ? (
+						<ReactJson
+							src={proof}
+							style={{
+								overflow: "scroll",
+								height: 320,
+								borderRadius: 5,
+								padding: 5,
+								border: `1px solid ${colors.primary[300]}`,
+							}}
+							theme={
+								theme.palette.mode === "dark"
+									? "bright"
+									: undefined
+							}
+						/>
+					) : (
+						<Skeleton
+							variant="rectangular"
+							sx={{
+								marginLeft: "auto",
+								borderRadius: 1,
+								height: 200,
+							}}
+						/>
+					)}
+				</CustomTabPanel>
+			</Box>
+			<Stack marginLeft={4} marginRight={4}>
+				{googleUser && proof ? (
+					<Button
+						variant={"outlined"}
+						sx={{ ml: "auto" }}
+						onClick={() => {
+							mintNft();
+						}}
+						disabled
+					>
+						<Typography marginLeft={1}>Generate</Typography>
+					</Button>
+				) : (
+					<Skeleton
+						variant="rectangular"
+						sx={{
+							marginLeft: "auto",
+							borderRadius: 1,
+							height: 35,
+							width: 100,
+						}}
+					/>
+				)}
+			</Stack>
+		</SlideContainer>
+	);
+};

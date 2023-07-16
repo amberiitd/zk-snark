@@ -18,6 +18,7 @@ const Home = () => {
 		>
 			<Box maxWidth={"600px"}>
 				<GradientText
+					grow
 					style={{
 						fontWeight: 700,
 						textAlign: "center",
@@ -27,6 +28,7 @@ const Home = () => {
 					Zero Knowledge Solution to Authorization
 				</GradientText>
 				<GradientText
+					grow
 					reverse
 					start={30}
 					variant="h1"

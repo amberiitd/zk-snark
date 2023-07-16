@@ -9,26 +9,43 @@ const GradientText: FC<{
 	style?: any;
 	start?: number;
 	end?: number;
-  reverse?: boolean;
-}> = ({ children, variant = "h4", style = {}, start = 10, end = 100, reverse }) => {
+	reverse?: boolean;
+	grow?: boolean;
+}> = ({
+	children,
+	variant = "h4",
+	style = {},
+	start = 10,
+	end = 100,
+	reverse,
+	grow,
+}) => {
 	const theme: any = useTheme();
 	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
-
-	return (
+	const textNode = (
+		<Typography
+			textAlign={"center"}
+			// variant={variant as any}
+			sx={{
+				...style,
+				background: `-webkit-linear-gradient(${
+					reverse ? 200 : 20
+				}deg, ${colors.primary[900]} ${start}%, ${
+					colors.bg[100]
+				} ${end}%)`,
+				WebkitBackgroundClip: "text",
+				WebkitTextFillColor: "transparent",
+			}}
+		>
+			{children}
+		</Typography>
+	);
+	return grow ? (
 		<Grow in={true} timeout={1000}>
-			<Typography
-				textAlign={"center"}
-				// variant={variant as any}
-				sx={{
-					...style,
-					background: `-webkit-linear-gradient(${reverse? 200: 20}deg, ${colors.primary[900]} ${start}%, ${colors.bg[100]} ${end}%)`,
-					WebkitBackgroundClip: "text",
-					WebkitTextFillColor: "transparent",
-				}}
-			>
-				{children}
-			</Typography>
+			{textNode}
 		</Grow>
+	) : (
+		textNode
 	);
 };
 
