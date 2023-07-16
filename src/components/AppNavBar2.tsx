@@ -1,7 +1,7 @@
-import { Button, IconButton, Stack, Typography } from "@mui/material";
+import { Button, IconButton, Stack, Typography, colors } from "@mui/material";
 import Box from "@mui/material/Box";
-import { FC, useContext } from "react";
-import { ColorModeContext } from "../contexts/theme";
+import { FC, useContext, useMemo } from "react";
+import { ColorModeContext, tokens } from "../contexts/theme";
 import { useTheme } from "@emotion/react";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
@@ -9,7 +9,7 @@ import { PageContext } from "../contexts/page";
 import { MetaMaskAvatar } from "react-metamask-avatar";
 import { AuthContext } from "../contexts/auth";
 import NetworkSelector from "./NetworkSelector";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 const AppNavBar = () => {
 	return (
@@ -29,6 +29,9 @@ export default AppNavBar;
 
 const NavLinks = () => {
 	const theme: any = useTheme();
+	const { path1 } = useParams();
+	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
+
 	const style = {
 		textDecoration: "none",
 		fontWeight: 600,
@@ -36,10 +39,22 @@ const NavLinks = () => {
 	};
 	return (
 		<Stack direction={"row"} spacing={2} marginLeft={3}>
-			<Link to="/generate" style={style}>
+			<Link
+				to="/generate"
+				style={{
+					...style,
+					color: path1 === "generate" ? colors.green[100] : "unset",
+				}}
+			>
 				Generate
 			</Link>
-			<Link to="/share" style={style}>
+			<Link
+				to="/share"
+				style={{
+					...style,
+					color: path1 === "share" ? colors.green[100] : "unset",
+				}}
+			>
 				Share
 			</Link>
 		</Stack>

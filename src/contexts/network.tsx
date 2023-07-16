@@ -12,14 +12,14 @@ import { noop } from "lodash";
 import { toast } from "react-toastify";
 import { appName } from "../constants/general";
 
-export const ABI = require('../abis/zk-gate-abi.json');
+export const ABI = require("../abis/zk-gate-abi.json");
 export const web3 = new Web3(window.ethereum);
 export type WalletProvider = "metamask" | "fuel" | undefined;
 export type Wallet = { provider: WalletProvider; api: any };
 export type NetworkConnection = {
 	state: "connecting" | "connected" | "disconnected" | "error";
 	connectingNetworkId?: string;
-  connectedNetworkId?: string;
+	connectedNetworkId?: string;
 };
 export const NetworkContext = createContext<{
 	connection: NetworkConnection;
@@ -57,7 +57,10 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 			return;
 		}
 
-		const handleEthereumNetworkChange = (chainId: string) => {
+		const handleEthereumNetworkChange = (
+			chainId: string,
+			notify = false
+		) => {
 			console.log("swithced to: ", chainId);
 			const decimalString = parseInt(chainId, 16).toString();
 			if (
@@ -65,23 +68,29 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 				!allowedNetworkIds["metamask"].includes(decimalString)
 			) {
 				setConnection({ state: "disconnected" });
-        toast.error("Invalid network!")
+				toast.error("Invalid network!");
 			} else {
-				setConnection({ state: "connected", connectedNetworkId: decimalString });
+				setConnection({
+					state: "connected",
+					connectedNetworkId: decimalString,
+				});
 				setContract(
 					new web3.eth.Contract(
 						ABI,
 						networks[decimalString].contractAddress
 					)
 				);
-        toast.info("Etherium network changed.")
+				if (notify) toast.info("Etherium network changed.");
 			}
 		};
+
+		const withToast = (chainId: string) =>
+			handleEthereumNetworkChange(chainId, true);
 
 		if (wallet?.provider === "metamask") {
 			if (!window.ethereum) {
 				setConnection({ state: "disconnected" });
-        toast.error("Metamask is not installed!")
+				toast.error("Metamask is not installed!");
 				return;
 			} else {
 				setConnection({ state: "connecting" });
@@ -90,21 +99,21 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 					.then(handleEthereumNetworkChange)
 					.catch((err: any) => {
 						setConnection({ state: "disconnected" });
-            toast.error("Error in Metamask connection!")
+						toast.error("Error in Metamask connection!");
 					});
-				window.ethereum.on("chainChanged", handleEthereumNetworkChange);
+				window.ethereum.on("chainChanged", withToast);
 
 				return () => {
 					window.ethereum.removeListener(
 						"chainChanged",
-						handleEthereumNetworkChange
+						withToast
 					);
 				};
 			}
 		}
 	}, [wallet]);
 
-  useEffect(() => {
+	useEffect(() => {
 		const onFuelLoaded = () => {
 			setFuel(window.fuel);
 		};

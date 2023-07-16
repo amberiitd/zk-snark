@@ -7,10 +7,7 @@ const style = {
 	position: "absolute",
 	top: "50%",
 	left: "50%",
-	transform: "translate(-25%, -50%)",
-	width: "27rem",
-	borderRadius: 3,
-	boxShadow: 24,
+	transform: "translate(-50%, -50%)",
 };
 
 const ShadowLoader = () => {

@@ -1,15 +1,16 @@
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
-import { Box, Button, MobileStepper } from "@mui/material";
+import { Box, IconButton, MobileStepper } from "@mui/material";
 import { noop } from "lodash";
 import { FC, useState } from "react";
 
 const SlideStepper: FC<{
+  disabled?: boolean;
 	steps?: number;
 	activeStep: number;
 	onChange?: (e: any, step: number) => void;
   style?: any;
-}> = ({ steps = 3, activeStep = 0, onChange = noop, style={} }) => {
+}> = ({ steps = 3, activeStep = 0, onChange = noop, style={}, disabled }) => {
 	return (
 		<Box display={"flex"} justifyContent={"center"} sx={{...style}}>
 			<MobileStepper
@@ -19,24 +20,24 @@ const SlideStepper: FC<{
 				activeStep={activeStep}
 				sx={{ maxWidth: 400, flexGrow: 1, backgroundColor: 'transparent' }}
 				nextButton={
-					<Button
+					<IconButton
 						size="small"
 						onClick={(e) => onChange(e, activeStep + 1)}
-						disabled={activeStep === steps-1}
+						disabled={true}
 					>
 						{/* Next */}
 						<KeyboardArrowRight />
-					</Button>
+					</IconButton>
 				}
 				backButton={
-					<Button
+					<IconButton
 						size="small"
 						onClick={(e) => onChange(e, activeStep - 1)}
-						disabled={activeStep === 0}
+						disabled={disabled || activeStep === 0}
 					>
 						<KeyboardArrowLeft />
 						{/* Back */}
-					</Button>
+					</IconButton>
 				}
 			/>
 		</Box>

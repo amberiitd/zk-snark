@@ -21,6 +21,7 @@ import { Amplify } from "aws-amplify";
 import AppNavBar from "./components/AppNavBar2";
 import RightConnectDrawer from "./components/RightConnectDrawer";
 import GeneratePage from "./pages/generate";
+import SharePage from "./pages/share";
 
 const vKey = require("./verification_key.json");
 
@@ -61,7 +62,7 @@ function App() {
 									</Routes>
 								</BrowserRouter>
 								<ToastContainer
-									position='bottom-left'
+									position="bottom-left"
 									autoClose={5000}
 									hideProgressBar={false}
 									closeOnClick
@@ -105,12 +106,13 @@ const Main = () => {
 			style={{
 				background: `linear-gradient(${colors.bg[100]}, ${colors.primary[100]})`,
 				position: "relative",
-        overflowX: 'hidden'
+				overflowX: "hidden",
 			}}
 		>
 			<AppNavBar />
 			{path1 === "app" && <HomePage />}
 			{path1 === "generate" && <GeneratePage />}
+			{path1 === "share" && <SharePage />}
 			{notfound && <Navigate to={"/app"} />}
 			<RightConnectDrawer />
 		</main>

@@ -23,6 +23,9 @@ export const tokens = (mode: ThemeMode) => ({
 				},
         red: {
           100: "#FF0800"
+        },
+        green: {
+          100: "#1CAC78"
         }
 		  }
 		: {
@@ -43,6 +46,9 @@ export const tokens = (mode: ThemeMode) => ({
 				},
         red: {
           100: "#FF0800"
+        },
+        green: {
+          100: "#1CAC78"
         }
 		  }),
 });
