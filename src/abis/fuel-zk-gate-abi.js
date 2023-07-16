@@ -1,4 +1,4 @@
-export const fuel_abi = {
+export const zk_gat_fuel_abi = {
     "types": [
       {
         "typeId": 0,

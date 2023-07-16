@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import { web3 } from "../contexts/network";
+import { WalletProvider } from "../contexts/network";
 
 export type Network = {
 	label: string;
@@ -19,7 +19,7 @@ export const networks: { [key: string]: Network } = {
 			"https://polygon-testnet.public.blastapi.io",
 			"https://polygon-mumbai.blockpi.network/v1/rpc/public",
 		],
-		contractAddress: "0x4cc953F6a4099f478923715adEBfbd7354bab8Ff",
+		contractAddress: "0x3226daE604FBF84f9C537357b9B854E06A1eA610",
 	},
 	"137": {
 		label: "Polygon Mainnet",
@@ -93,15 +93,16 @@ export const networks: { [key: string]: Network } = {
 };
 // "10200", "534353", "1442", "420", "3141", "5001", "80001"
 export const allowedNetworkIds: { [key: string]: string[] } = {
-	metamask: ["471100", "80001", "3141"],
+	metamask: ["471100", "80001"],
 	fuel: ["fuel0"],
 	default: [],
 };
 
+export const allowedWallets: WalletProvider[] = ['metamask'];
 export const pushApiKey =
 	"ZaCrOdyBNN.ajF5Igu8ppOfNkxiuiQGoXDyhTkd8sY4gG1v7aa822iVMJSnBE9zp1cXjDgUIPHC";
 
 export const ZK_GATE_CONTRACT = new new Web3(window.ethereum).eth.Contract(
-	require("./zk-gate-abi.json"),
+	require("../abis/zk-gate-abi.json"),
 	"0x8F47376eFE5CA9f9b9641a093FA71436192484A5"
 );

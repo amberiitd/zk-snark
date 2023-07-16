@@ -66,7 +66,7 @@ const AppSideBar: FC = () => {
 	const { path1 } = useParams();
 
 	const [selected, setSelected] = useState(path1 || "");
-	const { connection, setNetworkOption } = useContext(NetworkContext);
+	const { connection } = useContext(NetworkContext);
 
 	useEffect(() => {
 		setSelected(path1 || "");
@@ -184,7 +184,7 @@ const AppSideBar: FC = () => {
 									marginLeft: "auto",
 									marginRight: "5px",
 								}}
-								onClick={() => setNetworkOption(true)}
+								// onClick={() => setNetworkOption(true)}
 							>
 								<ToggleOnIcon />
 							</IconButton>

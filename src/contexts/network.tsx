@@ -9,8 +9,10 @@ import {
 import Web3 from "web3";
 import { allowedNetworkIds, networks } from "../constants/network";
 import { noop } from "lodash";
+import { toast } from "react-toastify";
+import { appName } from "../constants/general";
 
-export const ABI = require("../abi.json");
+export const ABI = require('../abis/zk-gate-abi.json');
 export const web3 = new Web3(window.ethereum);
 export type WalletProvider = "metamask" | "fuel" | undefined;
 export type Wallet = { provider: WalletProvider; api: any };
@@ -24,8 +26,6 @@ export const NetworkContext = createContext<{
 	setConnection: React.Dispatch<React.SetStateAction<NetworkConnection>>;
 	contract: any;
 	setContract: React.Dispatch<React.SetStateAction<any>>;
-	networkOption?: boolean;
-	setNetworkOption: React.Dispatch<React.SetStateAction<boolean>>;
 	wallet?: Wallet;
 	setWallet: React.Dispatch<React.SetStateAction<Wallet | undefined>>;
 	fuel?: any;
@@ -34,7 +34,6 @@ export const NetworkContext = createContext<{
 	setConnection: noop,
 	contract: undefined,
 	setContract: noop,
-	setNetworkOption: noop,
 	setWallet: noop,
 });
 
@@ -42,11 +41,10 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 	const [wallet, setWallet] = useState<Wallet | undefined>({
 		api: undefined,
 		provider: localStorage.getItem(
-			"l-earn-wallet-provider"
+			`${appName}-wallet-provider`
 		) as WalletProvider,
 	});
 	const [contract, setContract] = useState<any>();
-	const [networkOption, setNetworkOption] = useState(false);
 	const [fuel, setFuel] = useState<any>();
 	const [connection, setConnection] = useState<NetworkConnection>({
 		state: "disconnected",
@@ -67,20 +65,23 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 				!allowedNetworkIds["metamask"].includes(decimalString)
 			) {
 				setConnection({ state: "disconnected" });
+        toast.error("Invalid network!")
 			} else {
 				setConnection({ state: "connected", connectedNetworkId: decimalString });
-				// setContract(
-				// 	new web3.eth.Contract(
-				// 		ABI,
-				// 		networks[decimalString].contractAddress
-				// 	)
-				// );
+				setContract(
+					new web3.eth.Contract(
+						ABI,
+						networks[decimalString].contractAddress
+					)
+				);
+        toast.info("Etherium network changed.")
 			}
 		};
 
 		if (wallet?.provider === "metamask") {
 			if (!window.ethereum) {
 				setConnection({ state: "disconnected" });
+        toast.error("Metamask is not installed!")
 				return;
 			} else {
 				setConnection({ state: "connecting" });
@@ -89,6 +90,7 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 					.then(handleEthereumNetworkChange)
 					.catch((err: any) => {
 						setConnection({ state: "disconnected" });
+            toast.error("Error in Metamask connection!")
 					});
 				window.ethereum.on("chainChanged", handleEthereumNetworkChange);
 
@@ -102,6 +104,22 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 		}
 	}, [wallet]);
 
+  useEffect(() => {
+		const onFuelLoaded = () => {
+			setFuel(window.fuel);
+		};
+		if (window.fuel) {
+			onFuelLoaded();
+			return;
+		}
+
+		// Listen for the fuelLoaded event
+		document.addEventListener("FuelLoaded", onFuelLoaded);
+		return () => {
+			document.removeEventListener("FuelLoaded", onFuelLoaded);
+		};
+	}, []);
+
 	return (
 		<NetworkContext.Provider
 			value={{
@@ -109,8 +127,6 @@ const NetworkProvider: FC<{ children: any }> = ({ children }) => {
 				setConnection,
 				contract,
 				setContract,
-				networkOption,
-				setNetworkOption,
 				wallet,
 				setWallet,
 				fuel,

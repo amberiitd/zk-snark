@@ -2,7 +2,15 @@ import { useTheme } from "@emotion/react";
 import Box from "@mui/material/Box";
 import { FC, createContext, useContext, useMemo, useState } from "react";
 import { tokens } from "../contexts/theme";
-import { Button, Skeleton, Stack, Tab, Tabs, Typography } from "@mui/material";
+import {
+	Button,
+	Grow,
+	Skeleton,
+	Stack,
+	Tab,
+	Tabs,
+	Typography,
+} from "@mui/material";
 import jwt_decode from "jwt-decode";
 import ReactJson from "react-json-view";
 import { AuthContext } from "../contexts/auth";
@@ -25,6 +33,7 @@ import { clientApps } from "../constants/general";
 import ClientAppCard from "../components/ClientAppCard";
 import { Connector } from "../components/AppNavBar2";
 import InfoIcon from "@mui/icons-material/Info";
+import { toast } from "react-toastify";
 
 export type TabInfo = {
 	current: number;
@@ -182,7 +191,8 @@ const GeneratePage: FC = () => {
 			})
 			.catch((error) => {
 				setResultModal({ show: true, code: 0 });
-				console.log(error);
+				console.error(error);
+        toast.error("Error in NFT minting!")
 			});
 	};
 
@@ -243,27 +253,7 @@ const GeneratePage: FC = () => {
 				padding={"5% 0 10% 0"}
 			>
 				{isEmpty(account?.code) ? (
-					<Box
-						display={"flex"}
-						justifyContent={"center"}
-						marginTop={15}
-					>
-						<Box>
-							<Box display={"flex"} justifyContent={"center"}>
-								<img
-									src={`${process.env.PUBLIC_URL}/assets/connect-wallet.png`}
-									width={400}
-								/>
-							</Box>
-							<Stack
-								direction={"row"}
-								justifyContent={"center"}
-								marginTop={5}
-							>
-								<Connector label="Connect wallet" />
-							</Stack>
-						</Box>
-					</Box>
+					<NotConnected />
 				) : (
 					<Box>
 						<ClientAppSelection />
@@ -511,7 +501,11 @@ const AuthorizerSelection = () => {
 						<Typography>Facebook</Typography>
 						<Stack direction={"row"}>
 							<InfoIcon
-								sx={{ color: colors.red[100], fontSize: 13, mr: '2px' }}
+								sx={{
+									color: colors.red[100],
+									fontSize: 13,
+									mr: "2px",
+								}}
 							/>
 							<Typography
 								variant="body2"
@@ -678,5 +672,29 @@ const Approval = () => {
 				)}
 			</Stack>
 		</SlideContainer>
+	);
+};
+
+const NotConnected = () => {
+	return (
+		<Box display={"flex"} justifyContent={"center"} marginTop={15}>
+			<Grow in={true} timeout={1000}>
+				<Box>
+					<Box display={"flex"} justifyContent={"center"}>
+						<img
+							src={`${process.env.PUBLIC_URL}/assets/connect-wallet.png`}
+							width={400}
+						/>
+					</Box>
+					<Stack
+						direction={"row"}
+						justifyContent={"center"}
+						marginTop={5}
+					>
+						<Connector label="Connect wallet" />
+					</Stack>
+				</Box>
+			</Grow>
+		</Box>
 	);
 };

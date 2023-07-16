@@ -20,7 +20,6 @@ const NetworkOption: FC<{ show: boolean }> = (props) => {
 	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
 	const {
 		connection,
-		setNetworkOption,
 		wallet,
 	} = useContext(NetworkContext);
 	const [error, setError] = useState<any>();
@@ -47,7 +46,7 @@ const NetworkOption: FC<{ show: boolean }> = (props) => {
 					title="Unsupported network!"
 					subtitle="Please select among allowed networks."
 					onCancel={() => {
-						setNetworkOption(false);
+						// setNetworkOption(false);
 					}}
 				/>
 				<Box sx={{ px: 4, py: 3 }}>

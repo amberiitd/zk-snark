@@ -1,3 +1,5 @@
+export const appName = 'zk-gate';
+
 export const clientApps = [
 	{
     id: 'learn',

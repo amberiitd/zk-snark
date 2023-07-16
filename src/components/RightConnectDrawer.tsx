@@ -76,7 +76,7 @@ const Wallets = () => {
 
 	return (
 		<Stack spacing={2} padding={2}>
-			<Button onClick={() => ethLogin()} variant="outlined">
+			<Button onClick={() => ethLogin('metamask')} variant="outlined">
 				<img
 					src={`${process.env.PUBLIC_URL}/assets/metamask_icon.svg`}
 					height="40px"
@@ -84,7 +84,7 @@ const Wallets = () => {
 				/>
 				Metamask
 			</Button>
-			<Button onClick={() => ethLogin()} variant="outlined">
+			<Button onClick={() => ethLogin('fuel')} variant="outlined">
 				<img
 					src={`${process.env.PUBLIC_URL}/assets/fuel_icon.svg`}
 					height="40px"
