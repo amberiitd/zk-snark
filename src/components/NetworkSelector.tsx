@@ -12,9 +12,10 @@ import Spinner from "./Spinner1";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
+import { PageContext } from "../contexts/page";
 
 const NetworkSelector = () => {
-	const [open, setOpen] = useState(false);
+  const {openNetworkMenu: open, setOpenNetworkMenu: setOpen} = useContext(PageContext)
 	const anchor = useRef<HTMLButtonElement>(null);
 	const theme: any = useTheme();
 	const colors = useMemo(() => tokens(theme.palette.mode), [theme]);
@@ -121,7 +122,7 @@ const NetworkSelector = () => {
 			<Menu
 				id="network-menu"
 				anchorEl={anchor.current}
-				open={open}
+				open={open && allowedNetworkIds[wallet?.provider || "default"].length > 0}
 				onClose={() => {
 					if (connection.state !== "connecting") setOpen(false);
 				}}

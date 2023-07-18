@@ -33,6 +33,7 @@ import { ZK_GATE_CONTRACT } from "../constants/network";
 import moment from "moment";
 import { NetworkContext } from "../contexts/network";
 import { toast } from "react-toastify";
+import { PageContext } from "../contexts/page";
 
 export type TabInfo = {
 	current: number;
@@ -98,7 +99,7 @@ const GeneratePage: FC = () => {
 		previous: -1,
 	});
 	const { account } = useContext(AuthContext);
-	const { contract } = useContext(NetworkContext);
+	const { contract, connection } = useContext(NetworkContext);
 	const [googleUser, setGoogleUser] = useState<any>();
 	const [proof, setProof] = useState<any>();
 	const [nullifier, setNullifier] = useState<any>();
@@ -192,7 +193,7 @@ const GeneratePage: FC = () => {
 			.catch((error) => {
 				setResult(0);
 				console.error(error);
-				toast.error("Error in NFT minting!")
+				toast.error("Error in NFT minting!");
 			});
 
 		// await wait(5000);
@@ -258,6 +259,8 @@ const GeneratePage: FC = () => {
 			>
 				{isEmpty(account?.code) ? (
 					<NotConnected />
+				) : connection.state !== 'connected' ? (
+					<InvalidNetwork />
 				) : (
 					<Box>
 						<ClientAppSelection />
@@ -296,6 +299,31 @@ const NotConnected = () => {
 						marginTop={5}
 					>
 						<Connector label="Connect wallet" />
+					</Stack>
+				</Box>
+			</Grow>
+		</Box>
+	);
+};
+
+const InvalidNetwork = () => {
+  const { setOpenNetworkMenu } = useContext(PageContext);
+	return (
+		<Box display={"flex"} justifyContent={"center"} marginTop={15}>
+			<Grow in={true} timeout={1000}>
+				<Box>
+					<Box display={"flex"} justifyContent={"center"}>
+						<img
+							src={`${process.env.PUBLIC_URL}/assets/invalid-network.png`}
+							width={400}
+						/>
+					</Box>
+					<Stack
+						direction={"row"}
+						justifyContent={"center"}
+						marginTop={5}
+					>
+						<Button variant="outlined" size="small" onClick={() => setOpenNetworkMenu(true)}>Change Network</Button>
 					</Stack>
 				</Box>
 			</Grow>
